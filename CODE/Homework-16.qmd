@@ -1,0 +1,116 @@
+---
+title: "Homework-16"
+format: html
+editor: visual
+---
+Clear R's environment and turn on "tidyverse" and "here" packages:
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(here)
+```
+
+Create a new data frame called "cover":
+
+```{r}
+cover <- read.csv(here("DATA", "donnerville_percent_cover.csv"))
+```
+
+
+Examine the data set using at least two different functions. I chose glimpse(), str(), and summary()
+
+```{r}
+glimpse(cover) #gives quick overview of the data structure and content; shows columns horizontally
+```
+```{r}
+str(cover) #more detailed view; useful for understanding data types
+```
+```{r}
+summary(cover) #provides quick statistical overview of the data
+```
+
+Rename column headings:
+
+```{r}
+cover <- cover %>% rename(
+  Plot_type = Plot.type,
+  Plot_dim = Plot.dim,
+  Cover_type = cover_type,
+) #rename(new_name = old_name)
+```
+
+Convert "Site", "Plot_type" and "Cover_type" into factor variables:
+
+```{r}
+cover <- cover %>% mutate(
+  Site = as.factor(Site),
+  Plot_type = as.factor(Plot_type),
+  Cover_type = as.factor(Cover_type)
+)  #mutate() is used to modify columns, and as.factor() converted selected columns into factors
+```
+
+```{r}
+glimpse(cover) #check if Site, Plot_type and Cover_type were converted from <chr> to <fct>
+```
+
+Convert "Date" into a date variable:
+
+```{r}
+library(lubridate) #checks and turn on "lubridate" package
+```
+
+```{r}
+cover <- cover %>% mutate(Date = ymd(Date)) #lubridate can recognize common date formats like year-month-day
+```
+
+```{r}
+glimpse(cover) #you can use str() or glimpse() to verify the changes or just open the data frame tab on top
+```
+
+Do some error checking on your data and fix any mistakes you find:
+
+#Error fix in the "Site" column:
+```{r}
+fix1 <- which(cover$Site == "donnerville 1")
+cover$Site[fix1] <- "Donnerville 1"
+```
+
+```{r}
+fix2 <- which(cover$Site == "DONNERVILLE - 1")
+cover$Site[fix2] <- "Donnerville 1"
+```
+
+```{r}
+fix3 <- which(cover$Site == "donnerville 2")
+cover$Site[fix3] <- "Donnerville 2"
+```
+
+```{r}
+fix4 <- which(cover$Site == "donnerville-3")
+cover$Site[fix4] <- "Donnerville 3"
+```
+
+#Error fix in the "Cover_type" column:
+```{r}
+fix5 <- which(cover$Cover_type == "bare")
+cover$Cover_type[fix5] <- "Bare"
+```
+```{r}
+fix6 <- which(cover$Cover_type == "vasc")
+cover$Cover_type[fix6] <- "Vascular"   #for some reason it did not change one "vasc" into "Vascular" !!!
+```
+
+Determine the average percent cover by Cover_type (Bare, Bryophytes, Vascular plants) for Donnerville 1:
+```{r}
+cover %>% 
+  group_by(Cover_type) %>% 
+  summarise(meanPercent = mean(Percent))
+```
+
+Determine the average percent vascular plant cover across all sites:
+```{r}
+cover %>% 
+  summarise(meanPercent = mean(Percent))
+```
+
