@@ -3,6 +3,7 @@ title: "Homework-16"
 format: html
 editor: visual
 ---
+
 Clear R's environment and turn on "tidyverse" and "here" packages:
 
 ```{r}
@@ -17,15 +18,16 @@ Create a new data frame called "cover":
 cover <- read.csv(here("DATA", "donnerville_percent_cover.csv"))
 ```
 
-
 Examine the data set using at least two different functions. I chose glimpse(), str(), and summary()
 
 ```{r}
 glimpse(cover) #gives quick overview of the data structure and content; shows columns horizontally
 ```
+
 ```{r}
 str(cover) #more detailed view; useful for understanding data types
 ```
+
 ```{r}
 summary(cover) #provides quick statistical overview of the data
 ```
@@ -71,6 +73,7 @@ glimpse(cover) #you can use str() or glimpse() to verify the changes or just ope
 Do some error checking on your data and fix any mistakes you find:
 
 #Error fix in the "Site" column:
+
 ```{r}
 fix1 <- which(cover$Site == "donnerville 1")
 cover$Site[fix1] <- "Donnerville 1"
@@ -92,16 +95,19 @@ cover$Site[fix4] <- "Donnerville 3"
 ```
 
 #Error fix in the "Cover_type" column:
+
 ```{r}
 fix5 <- which(cover$Cover_type == "bare")
 cover$Cover_type[fix5] <- "Bare"
 ```
+
 ```{r}
 fix6 <- which(cover$Cover_type == "vasc")
 cover$Cover_type[fix6] <- "Vascular"   #for some reason it did not change one "vasc" into "Vascular" !!!
 ```
 
 Determine the average percent cover by Cover_type (Bare, Bryophytes, Vascular plants) for Donnerville 1:
+
 ```{r}
 cover %>% 
   group_by(Cover_type) %>% 
@@ -109,8 +115,8 @@ cover %>%
 ```
 
 Determine the average percent vascular plant cover across all sites:
+
 ```{r}
 cover %>% 
   summarise(meanPercent = mean(Percent))
 ```
-

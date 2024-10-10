@@ -1,0 +1,27 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Homework 15 feedback
+
+Overall nice job! You might take a look at the leve of headings you use. It feels a little like being shouted at to read some of your bold ones!
+
+# Yelling
+
+## Yelling but not so loud
+
+You did a good job adding a lot of "scientific thinking" outside of your code chunks. Now think about also adding some comments to your code chunks, e.g.
+
+```{r}
+#here is a comment inside of a code chunk
+```
+
+so that future you can remember how the code works.
+
+## Homework 16 Feedback
+
+You don't have the percent cover data inside of your project DATA folder (you have squirrel data, not percent cover data) so I can't run your code. Please be careful that in future your data for your project are all inside of your DATA folder.
+
+I read through your code, and it looks good, but I wan't able to run it.

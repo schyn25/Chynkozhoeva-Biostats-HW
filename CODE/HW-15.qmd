@@ -38,16 +38,18 @@ select() = selects columns slice() = selects rows filter() = selects subsets of 
 
 # The KEY to using dplyr is to remember that the first arrangement to ALL dplyr functions is the data frame.
 
-1) select ()
+1)  select ()
 
 ```{r}
 names(compensation) #use to see the column names
 ```
 
 Now, we can use select() to get the "Fruit" COLUMN:
+
 ```{r}
 select(compensation, Fruit) #use the fruit column
 ```
+
 # All dplyr functions do ONLY ONE THING, but they do it very fast and very efficiently.
 
 select() can also be used to select ALL columns EXCEPT one:
@@ -56,49 +58,57 @@ select() can also be used to select ALL columns EXCEPT one:
 select(compensation, -Root) #a minus sign = except
 ```
 
-2) slice() works by returning specific ROW numbers you ask for. You can ask for one row, a sequence, or a discontinuous set.
+2)  slice() works by returning specific ROW numbers you ask for. You can ask for one row, a sequence, or a discontinuous set.
 
 ```{r}
 slice(compensation, 2) #to get the 2nd row 
 ```
+
 If we want the 2nd-10th, we can invoke the ":" to generate the sequence
 
 ```{r}
 slice(compensation, 2:10)
 ```
+
 To ask for a discontinuous set, we first need to "collect" the row numbers using c():
+
 ```{r}
 slice(compensation, c(2, 3, 10))
 ```
+
 (?!) You have new, continuous row numbers. Just be aware.
 
-3) filter() = super powerful subsetting. R has a complete set of logical operations. 
+3)  filter() = super powerful subsetting. R has a complete set of logical operations.
 
 Logical operations and booleans: "booleans" = "логические значения"
 
 ```{r}
 with(compensation, Fruit > 80)
 ```
+
 with() says R to look in this data frame and do what comes next and then stop looking
 
-">" produces a sequence of TRUE and FALSE, identifying where the "Fruit" vector is "true" that the value of Fruit is >80.  
- 
-If we are interested in all of the trees producing a large amount of fruit, the production means >80 kg
+"\>" produces a sequence of TRUE and FALSE, identifying where the "Fruit" vector is "true" that the value of Fruit is \>80.
+
+If we are interested in all of the trees producing a large amount of fruit, the production means \>80 kg
 
 ```{r}
 filter(compensation, Fruit > 80)  #find the rows where the fruit is bigger than 80 kg and return them as a data frame
 ```
-Another example: to keep only rows with fruit>80 OR LESS THAN 20, we employ "|" symbol
+
+Another example: to keep only rows with fruit\>80 OR LESS THAN 20, we employ "\|" symbol
 
 ```{r}
 filter(compensation, Fruit>80 | Fruit<20) #"|" symbol means "or"
 ```
+
 If we want the low and high fruit-producing trees for some other activity, we need to assign the results to an object:
+
 ```{r}
 lo_hi_fruit <- filter(compensation, Fruit>80 | Fruit<20)
 ```
 
-4) mutate() starts with a data frame in which the variables reside, and then designates a new column name and the transformation. 
+4)  mutate() starts with a data frame in which the variables reside, and then designates a new column name and the transformation.
 
 we are essentially overwriting the data frame!
 
@@ -108,35 +118,37 @@ e.g: log-transform Fruit and call it "logFruit"
 head(compensation) #head() is used to limit the number of rows we see for clarity
 ```
 
-
 ```{r}
 compensation <- mutate(compensation, logFruit = log(Fruit)) #by using mutate(), create a new "logFruit" column. You can find it under object "compensation" in your "environment". 
 ```
 
 First six rows of the new compensation:
+
 ```{r}
 head(compensation)
 ```
 
-5) arrange () = helps with sorting data
+5)  arrange () = helps with sorting data
 
 e.g: if we want to see the compensation data in order of increasing Fruit production, we can do as following:
+
 ```{r}
 arrange(compensation, Fruit)
 ```
-Another reason for arranging rows in increasing order id if we would like to perform analyses that needs a specific order. 
+
+Another reason for arranging rows in increasing order id if we would like to perform analyses that needs a specific order.
 
 ## Two top tips:
 
 Tip-1: you can use more than ode dplyr function in one line of code!
 
-e.g: if you want production>80, and the rootstock width ONLY, you would use:
+e.g: if you want production\>80, and the rootstock width ONLY, you would use:
+
 ```{r}
 select(filter(compensation, Fruit>80), Root)
 ```
 
-Tip-2:In R, the "pipe" command is "%in%"
-The pipe command means "put the answer of the left-hand command into the function of the right"
+Tip-2:In R, the "pipe" command is "%in%" The pipe command means "put the answer of the left-hand command into the function of the right"
 
 ```{r}
 compensation %>% 
@@ -148,18 +160,20 @@ compensation %>%
 
 SUMMARIZATION is accomplished in a series of steps:
 
-1) Declare the data frame and what the grouping variable is.
-2) Provide some kind of maths function with which to summarize the data (e.g. mean/sd).
-3) Provide a nice name for the values returned.
-4) Make R use all of this information. 
+1)  Declare the data frame and what the grouping variable is.
+2)  Provide some kind of maths function with which to summarize the data (e.g. mean/sd).
+3)  Provide a nice name for the values returned.
+4)  Make R use all of this information.
 
 # METHOD 1: NESTED, NO PIPE
+
 Here, using one grouping variable with two levels and asking for the means, we expect a data frame to be returned with two numbers, a mean for Grazed and a mean for Ungrazed Fruit production:
 
 ```{r}
 summarise(group_by(compensation, Grazing), meanFruit = mean(Fruit))
 
 ```
+
 group_by() = works with data frame and declares Grazing our grouping variable.
 
 ```{r}
@@ -167,7 +181,6 @@ mean.fruit <- summarise(
   group_by(compensation, Grazing),
   meanFruit = mean(Fruit))
 ```
-
 
 # METHOD 2: PIPE, NO NESTING
 
@@ -178,7 +191,3 @@ compensation %>%
             sdFruit = sd(Fruit))
 
 ```
-
-
-
-
