@@ -1,0 +1,187 @@
+---
+title: "Homework-21"
+format: html
+editor: visual
+---
+
+# 5.1 Getting started doing statistics in R
+
+Interesting: "Always start an analysis with a picture, never with a statistical tests".
+
+Here are some steps:
+1) Plot your data
+2) Build your model
+3) Check your assumptions  
+4) Interpret your model (check the p-values).
+5) Replot the data and the model (predicted/fitted lines).
+
+# 5.2 Chi-squared contingency table analysis
+
+The x2 contingency table analysis is an analysis of count data. An association test between two or more categorical variables. 
+
+## 5.2.1 LADYBIRDS
+
+Assume we collected data on the frequency of black and red ladybirds in industrial and rural habitats.
+We are interested whether dark morphs are more likely to reside on dark (industial) backgrounds. 
+
+Perform x2 contingency table analysis to test the null hypothesis (H0) that there is no association between ladybird colors and their habitats.
+The alternative hypothesis (H1) is that there is an association.
+
+Biologically, we are trying to answer the question of whether some feature of the habitat is associated with the frequencies of the different colored morphs. 
+
+```{r}
+rm(list = ls()) #clear the environment and enable helpful packages
+library(tidyverse) 
+library(ggplot2) 
+```
+
+```{r}
+lady <- read.csv(here("DATA", "ladybirds.csv")) #import the data 
+```
+
+```{r}
+glimpse(lady) #check the data
+```
+Change the <chr> data into factors: 
+```{r}
+lady$Habitat <- as.factor(lady$Habitat)
+lady$Site <- as.factor(lady$Site)
+lady$colour <- as.factor(lady$colour)
+```
+
+## For consistency, I decided to change the column names and capitalize them:
+```{r}
+colnames(lady) [3] <- "Color"
+colnames(lady) [4] <- "Number"
+```
+
+##Key for categories (names are slightly different than in the chapter):
+
+"Habitat" - Industrial/Rural  
+"Site" - unique identifier for the location
+"Color" - red/black
+"Number" - #of ladybirds observed
+
+"We are aiming for 4 numbers, each of which is the sum of the observations of each color in each habitat"
+
+```{r}
+#slightly changed names here as well:
+
+totals <- lady %>%
+  group_by(Habitat, Color) %>%
+  summarise(Total_Number = sum(Number))
+```
+
+```{r}
+# time for a bar chart! It shows total numbers of red and black ladybirds collected in industrial and rural habitats
+
+ggplot(totals, aes(x = Habitat, y = Total_Number, fill = Color)) +
+  geom_bar(stat = 'identity', position = 'dodge')
+```
+
+## New ggplot details:
+
+"fill = Color" is used when the geometry/shape is something like a bar and can be filled
+
+"colour = Color" with a bar changes the OUTLINE of the bar, NOT the color
+
+In "geom_bar()":
+
+stat = 'identity' prohibits ggplot from calculating anything from the data   
+
+position = 'dodge' is a request to put two bars in EACH "Habitat" group next to each other (otherwise, you'll get a stacked bar plot). 
+
+## Fixing the colors:
+
+We need to customize the colors so that black corresponds to black ladybirds and red to red ones:
+
+```{r}
+#"values" are needed to set the colors for use
+
+ggplot(totals, aes(x = Habitat, y = Total_Number,
+                   fill = Color)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  scale_fill_manual(values = c(black = "black", red = "red"))
+```
+REMEMBER that chi-squared test compares the frequencies/proportions, not the absolute numbers. This suggests that the morphs are NOT equally distributed.
+
+
+```{r}
+lady.mat <- xtabs(Number ~ Habitat + Color,
+                  data = lady)
+
+#xtabs() function transforms data frame into the matrix we need for the chi-squared test
+```
+```{r}
+chisq.test(lady.mat)
+
+#The p-value is very small. This results allows us to reject the null hypothesis and conclude that there is an association between the habitat and color of the ladybird.
+
+#We tested the hypothesis that there is an association between color morphs of ladybirds and industrial and rural habitats. Ladybird color morphs are not equally distributed in the two habitats, with black morphs being more frequent in industrial habitats whereas red morphs are more frequent in rural areas.  
+```
+```{r}
+lady.chi <- chisq.test(lady.mat)
+names(lady.chi)
+```
+ 
+
+# 5.3 Two-sample t-test
+
+1) Always plot the data
+2) Check model assumptions
+3) R makes it all easy
+
+## The two-sample t-test = comparison of the means of two groups of numeric values. It is appropriate for a small sample size. However, the assumption is that the data is normally distributed and that their variances are equal. 
+
+## The t-test Data
+
+We are interested in whether there is a difference in the average ozone concentration between gardens in the east and the west.
+
+```{r}
+#follow the usuals for importing and checking out the data
+
+ozone <- read_csv(here("DATA", "ozone.csv"))
+
+glimpse(ozone)
+```
+```{r}
+#convert characters into factors just as you did for ladybirds:
+
+ozone$Garden.location <- as.factor(ozone$Garden.location)
+ozone$Garden.ID <- as.factor(ozone$Garden.ID)
+
+glimpse(ozone)
+```
+Plot the data!
+
+```{r}
+ggplot(ozone, aes(x =Ozone)) +
+  geom_histogram(binwidth = 10) +
+  facet_wrap(~ Garden.location, ncol = 1) +
+  theme_bw()
+#since there are only two group, histogram looks like a good option to plot
+
+#a different reason why we plotted data like this was to provide some indication of whether our null hypothesis is true or not
+```
+
+To do a t-test:
+```{r}
+t.test(Ozone ~ Garden.location, data = ozone)
+```
+"data" argument specifies the dataframe (df)
+Hypothesis: Do ozone levels(Ozone) vary as a function of location(Garden.location)?
+
+##Looking at the t-test output:
+
+line 3 (t = 4.2363 etc) provides a traditional t-test statistic, degrees of freedom, and a p-value
+If the difference between two things is 0 then they are the same, and we cannot reject the null hypothesis. 
+The interval is around the difference between the two means.Since the interval doesn't include 0, the means are not the same.
+The final line provides mean values for both East and West.
+
+FYI: Testing for equality of variance in t-test is not necessary nor advised when using the Welch version, but if a test must be used you can do the following:
+var.test(Ozone ~ Garden.location, data = ozone)
+
+
+
+
+
