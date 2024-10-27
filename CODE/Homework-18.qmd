@@ -1,0 +1,168 @@
+---
+title: "Homework-18"
+format: html
+editor: visual
+---
+
+#Chapter 4: Visualizing Your Data
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(here)
+```
+
+##4.2 ggplot: a grammar for graphics
+
+Start with importing "compensation" data and checking the the variabes out:
+
+```{r}
+compensation <- read.csv(here("DATA", "compensation.csv"))
+```
+
+```{r}
+glimpse(compensation) #gives us a clear overview of the variables and the type of data that we have
+```
+
+Scatterplots are good at displaying raw data.
+
+```{r}
+#to make a simple, plain, bivariate scatterplot:
+
+#it is a two-layered graph
+
+ggplot(compensation, aes(x = Root, y = Fruit)) +
+  geom_point()
+
+#aes() defines the "aesthetics" (vuisuals/features) of the graph
+```
+
+The graph seems to have a positive linear correlation (both values increase).
+
+Remember: ggplot2 works by adding layers and components to the aesthetic map. 1st layer: data and aesthetic 2nd layer: add geometric objects (points, lines, etc.) and more
+
+```{r}
+ggplot(compensation, aes(x = Root, y = Fruit)) +
+  geom_point() +
+  theme_bw()
+
+#theme_bw() was used to clear the grey background
+
+```
+
+##Follow the following steps to customize your scatterplot:
+
+-To increase the size of the points use:
+
+```{r}
+ggplot(compensation, aes(x = Root, y = Fruit)) +
+  geom_point(size = 5) +
+  theme_bw()
+#"size" alters the size (in ourc case it was increased)
+```
+
+-To rename the x- and y-axis use:
+
+```{r}
+ggplot(compensation, aes(x = Root, y = Fruit)) +
+  geom_point(size = 5) +
+  xlab("Root Biomass") +
+  ylab("Fruit Production") +
+  theme_bw()
+```
+
+-To adjust the colors of the points to match specific levels in a group use:
+
+```{r}
+ggplot(compensation, aes(x = Root, y = Fruit, colour = Grazing)) +
+  geom_point(size = 5) +
+  xlab("Root Biomass") +
+  ylab("Fruit Production") +
+  theme_bw()
+
+#the colors below (coral-red and bluish-green) are two default ggplot colors
+```
+
+-To change the shape of the points to correspond to the Grazing treatment with two levels use:
+
+```{r}
+ggplot(compensation, aes(x=Root, y=Fruit, colour=Grazing, shape=Grazing)) +
+  geom_point(size = 5) +
+  xlab("Root Biomass") +
+  ylab("Fruit Production") +
+  theme_bw()
+```
+
+##4.3 Box-and-whisker plots
+
+```{r}
+ggplot(compensation, aes(x=Grazing, y=Fruit)) +
+  geom_boxplot() +
+  xlab("Grazing Treatment") +
+  ylab("Fruit Production") +
+  theme_bw()
+```
+
+Now we can add more features to our boxplot:
+
+```{r}
+ggplot(compensation, aes(x = Grazing, y = Fruit)) +
+  geom_boxplot() +
+  geom_point(size = 4, colour = 'lightgrey', alpha = 0.5) +
+  xlab("Grazing Treatment") +
+  ylab("Fruit Production") +
+  theme_bw()
+
+#alpha - stands for transparency of all points within this layer
+```
+
+##Answer the questions based on the graphs:
+
+1 - Do plants with wider root diameters at the start of the experiment produce more fruit? Ans: It seems the higher the root biomass/wider root diameter, the more fruits are produced.
+
+2 - Do grazed or ungrazed plants produce more fruit? Ans:It seems like grazed plants produce more fruit.
+
+##4.4 Distributions: making histograms of numeric variables
+
+By looking at the distribution of our variables, we can learn more about the shape of the distribution, about the central tendency, about spread, and if there might be some rather extreme values.
+
+```{r}
+ggplot(compensation, aes(x = Fruit)) +
+  geom_histogram()
+
+#in histograms, aes() only has one variable (x) 
+```
+
+!To fix the problem with the way histogram looks check Console. RStudio already informed you that: `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+
+```{r}
+#we can either change the bindwidth = how wide each bar is or the number of bins. Both produce roughly the same view of the data. 
+
+ggplot(compensation, aes(x = Fruit)) +
+  geom_histogram(bins = 10)
+
+```
+
+```{r}
+ggplot(compensation, aes(x = Fruit)) +
+  geom_histogram(binwidth = 15) 
+```
+
+Faceting or latticing is about producing a matrix of graphs, automatically structured by a factor/categorical variable in your data.
+
+```{r}
+ggplot(compensation, aes(x = Fruit)) +
+  geom_histogram(binwidth = 15) +
+  facet_wrap(~Grazing)
+
+#this code allows ggplot() to split the data by the Grazing treatment, providing 2 histograms with one code
+```
+##4.5 Saving your graphs for presentations, documents, etc.
+
+There are 2 main ways:
+
+1 - In the "Plots" tab on the right bottom panel, there is an "Export" button. You can save files as .png or .tiff, to save to PDF or copy to clipboard. 
+
+2 - Use R's ggsave() function
+It saves the figure in the "plots" window to a file name we specify. 
+
