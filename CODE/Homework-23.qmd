@@ -1,0 +1,112 @@
+---
+title: "Homework-23"
+format: html
+editor: visual
+---
+
+##5.4 Introducing Linear Models
+
+Linear models include regression, multiple regression, ANOVA, and ANCOVA. These models share a common framework for estimation and a common set of assumptions, centered around the idea of normally distributed residuals.
+
+DO NOT confuse 'GENERAL linear model' with 'GENERALIZED linear model'.
+
+lm() is the most important function - a tool to fit linear models.
+
+##5.5 Simple Linear Regression
+
+Question: Does plant growth rate vary with soil moisture content? Prediction: More moisture = higher growth rates.
+
+Two important features:
+
+1)  We have a clear relationship specified between the two variables (response variable - growth rate; explanatory variable - soil moisture).
+
+2)  Soil moisture content is continuous, numeric variable. There are NO categories.
+
+Run the essentials:
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(here)
+```
+
+Import the data:
+
+```{r}
+plant_gr <- read.csv(here("DATA", "plant.growth.rate.csv"))
+```
+
+See the data via glimpse():
+
+```{r}
+glimpse(plant_gr)
+```
+
+The data structure demonstrated two continuous variables. Making a figure of this data involves creating a scatterplot:
+
+```{r}
+ggplot(plant_gr, aes(x = soil.moisture.content, y = plant.growth.rate)) +
+  geom_point() +
+  ylab("Plant Growth Rate (mm/week)") +
+  theme_bw()
+```
+
+-Recognize that this scatterplot has a positive slope. The higher the soil moisture content, the better is plant growth.
+
+-Try and examine your data before you do the analysis. You can make estimations based on the slope and intercept. Roughly speaking, the growth rate varies between 20 and 50 mm/week and soil moisture varies between 0 and 2, making the slope (gradient) 30/2 = 15. And the intercept is somewhere between 15-20 mm/week.
+
+```{r}
+model_pgr <- lm(plant.growth.rate ~ soil.moisture.content,
+                data = plant_gr)
+```
+
+This transcribes as 'find a linear model, where we hypothesize that plant growth rate is a function of soil moisture content, using the variables from the plant_gr data frame'.
+
+```{r}
+library(ggfortify)
+autoplot(model_pgr, smooth.colour = NA)
+```
+
+##What does each graph mean?
+
+1)  Top Left (Residual vs Fitted): tells us whether a line is appropriate to fit to the data. Hump-shapes or valleys would appear if something was wrong and the structure of the model did not work.
+
+2)Top Right (Normal Q-Q plot): evaluates the assumption of normality of the residuals. The dashed line is the expectation under the normal distribution.
+
+3)  Bottom Left (Scale - location): evaluates assumption of equal variance. The y-axis is a standardized (all positive) indicator of the variation. There should be no pattern. Linear models assume that the variance is constant over all predicted values of the response variable.
+
+4)  Bottom Right (Residuals vs. leverage): evaluates leverage, a tool not only to detect influetial data points, bu talso to detect outliers.
+
+All of these plots say that everything is fine.
+
+anova() DOES NOT produce an ANOVA, but instead produces a classic table in statistics, the sums-of-squares table. It provides the F-value for the model, representing the ratio of variance explained by the explanatory variables to the leftover variance.
+
+summary() produces a table of the estimates of the coefficients of the line that is 'the model': an intercept and a slope.
+
+The anova() table:
+
+```{r}
+anova(model_pgr)
+```
+
+And the summary table:
+
+```{r}
+summary(model_pgr)
+```
+
+##5.5.6 From stats back to figure
+
+Let's make a figure that shows off our relationship in light of our statistical results.
+
+```{r}
+ggplot(plant_gr, aes(soil.moisture.content, plant.growth.rate))+
+     geom_point()+
+     geom_smooth(method = "lm")+
+     ylab("Plant growth rate (mm/week)")+
+     theme_bw()
+```
+
+We can see that the `geom_smooth()` call allowed the computer to add the fitted values and the standard error of the fit to a figure.
+
+It goes well with facet_wrap(), but do not expect `geom_smooth()` to work correctly for more complex models.
