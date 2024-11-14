@@ -4,7 +4,7 @@ format: html
 editor: visual
 ---
 
-##5.4 Introducing Linear Models
+## 5.4 Introducing Linear Models
 
 Linear models include regression, multiple regression, ANOVA, and ANCOVA. These models share a common framework for estimation and a common set of assumptions, centered around the idea of normally distributed residuals.
 
@@ -12,7 +12,7 @@ DO NOT confuse 'GENERAL linear model' with 'GENERALIZED linear model'.
 
 lm() is the most important function - a tool to fit linear models.
 
-##5.5 Simple Linear Regression
+## 5.5 Simple Linear Regression
 
 Question: Does plant growth rate vary with soil moisture content? Prediction: More moisture = higher growth rates.
 
@@ -67,7 +67,7 @@ library(ggfortify)
 autoplot(model_pgr, smooth.colour = NA)
 ```
 
-##What does each graph mean?
+## What does each graph mean?
 
 1)  Top Left (Residual vs Fitted): tells us whether a line is appropriate to fit to the data. Hump-shapes or valleys would appear if something was wrong and the structure of the model did not work.
 
@@ -95,7 +95,7 @@ And the summary table:
 summary(model_pgr)
 ```
 
-##5.5.6 From stats back to figure
+## 5.5.6 From stats back to figure
 
 Let's make a figure that shows off our relationship in light of our statistical results.
 
