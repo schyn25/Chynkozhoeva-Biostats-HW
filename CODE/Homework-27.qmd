@@ -201,29 +201,34 @@ You know what to do here. Go for it.
 #### Plot and guess
 
 ```{r}
-
+ggplot(df_All_NA,
+       aes(x = Growth_rate_mm, y = Dried_mass_g)) +
+         geom_point() 
 ```
 
 #### Create model
 
 ```{r}
-
+lm_all <- lm(Growth_rate_mm ~ Dried_mass_g, data = df_All_NA)
 ```
 
 #### Check assumptions
 
 ```{r}
-
+autoplot(lm_all)
 ```
 
 Don't worry if assumptions don't look perfect - focus on normality of the data.
+
+Normality looks good.
 
 #### Interpret model
 
 Use `anova()` first before using `summary()`
 
 ```{r}
-
+anova(lm_all)
+summary(lm_all)
 ```
 
 Why is there 1 degree of freedom for Growth_rate_mm and why are there 34 degrees of freedom for the Residuals?
@@ -237,19 +242,21 @@ Why is there 1 degree of freedom for Growth_rate_mm and why are there 34 degrees
 #### Plot and guess
 
 ```{r}
-
+ggplot(df_No_NA,
+       aes(x = Growth_rate_mm, y = Dried_mass_g)) +
+         geom_point() 
 ```
 
 #### Create model
 
 ```{r}
-
+lm_no_na <- lm(Growth_rate_mm ~ Dried_mass_g, data = df_All_NA)
 ```
 
 #### Check assumptions
 
 ```{r}
-
+autoplot(lm_no_na)
 ```
 
 Again, don't worry if the assumptions aren't perfect. How do they compare to the first analysis?
@@ -259,11 +266,14 @@ Again, don't worry if the assumptions aren't perfect. How do they compare to the
 Use `anova()` first then `summary()`.
 
 ```{r}
-
+anova(lm_no_na)
+summary(lm_no_na)
 ```
 
 Answer the following questions:
 
 1.  How many degrees of freedom are there for Growth_rate_mm? Why?
+
 2.  How many degrees of freedom are there for Residuals? Why?
+
 3.  How are the degrees of freedom in this second model different than the first? What does the answer tell you about the role of NA values in the regression analysis?
