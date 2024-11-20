@@ -1,0 +1,130 @@
+---
+title: "Homework-28"
+format: html
+editor: visual
+---
+
+# Pimping Your Plots: Scales and Themes in ggplot2
+
+## Preparation
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(here)
+```
+
+
+```{r}
+library(gridExtra)
+```
+
+
+```{r}
+compensation <- read.csv(here("DATA", "compensation.csv"))
+```
+
+```{r}
+eg_scatter <- 
+  ggplot(data = compensation, aes(x = Root, y = Fruit)) +
+  geom_point() +
+  theme_bw()
+```
+
+```{r}
+eg_box <- 
+  ggplot(data = compensation, aes(x = Grazing, y = Fruit)) +
+  geom_boxplot()
+```
+
+```{r}
+grid.arrange(eg_scatter, eg_box, nrow=1)
+
+#helps to place multiple figures on the same page
+```
+## What ypu may want to customize
+
+- The theme() determines how the parts of a graph that are not directly determined by the mapping in aes() are displayed. E.g: gridlines and text formatting.
+
+- The scale() functions are deeply tied to the x- and y-axis variables, defined by aes(). E.g: ranges, breakpoints.
+
+## Axis labels, axis limits, and annotation
+
+To change labels of the axis use xlab() and ylab(), or their parent function labs().
+
+```{r}
+eg_scatter + xlab("Root Biomass") + ylab("Fruit Production")
+```
+
+
+```{r}
+eg_scatter + ggtitle("My SUPERB title")
+```
+
+```{r}
+eg_scatter + labs(title = "My useless title",
+                  x= "Root Biomass", y="Fruit Production")
+```
+
+
+The convenience funcions are xlim() and ylim()
+```{r}
+eg_scatter + xlim(0, 20) + ylim(0, 140)
+```
+
+The annotate() allows us to place custom text inside the graph/figure. 
+```{r}
+eg_scatter + 
+  annotate("text", x = c(6,8), y = c(105, 25),
+                      label = c("Text up here...", "...and text down here"))
+```
+
+## Scales
+
+We adjust range of the x-axis using the limits = argument, and the frequency and locatio of the tick marks by specifying the integer values where we want them with the breaks = argument. We extend teh range of the x-axis from 4 to 11, and place tick marks in steps of 1 between 4 and 11:
+
+```{r}
+eg_scatter + scale_x_continuous(limits = c(4,11), breaks = 4:11)
+```
+
+```{r}
+ggplot(data = compensation, aes(x = Root, y = Fruit, colour = Grazing)) +
+  geom_point() +
+  scale_colour_manual(values = c(Grazed = "brown", Ungrazed = "green"))
+```
+scales() can also help to transform an axis of a plot. 
+```{r}
+eg_box +
+  scale_y_continuous(breaks = seq(from = 10, to = 150, by=20, trans = "log10"))
+```
+## The theme
+
+```{r}
+eg_scatter +
+  theme(
+    panel.background = element_rect(fill = NA, colour = "black"),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(colour = "lightblue")
+  )
+```
+
+- element() specifies arguments for the panel group geometric components, such as 'rect' - rectangle
+
+```{r}
+eg_box +
+  theme(
+    axis.title.x = element_text(colour = "cornflowerblue",
+    size = rel(2)),
+    axis.text.x = element_text(angle = 45, size = 13, vjust = 0.5)
+  )
+```
+
+```{r}
+eg_box + scale_x_discrete(limits = c("Ungrazed", "Grazed"),
+                          labels = c("Control", "Grazed"))
+```
+```{r}
+
+```
+
+
