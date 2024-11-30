@@ -1,0 +1,135 @@
+---
+title: "Homework-26"
+format: html
+editor: visual
+---
+
+### Introduction
+
+Practice running a one-way ANOVA by using the data on pea plant root lengths, measured in optical units for plants grown on different growth media.
+
+Set things up:
+
+```{r}
+rm(list = ls())
+
+library(ggfortify)
+library(multcomp)
+library(tidyverse)
+library(here)
+```
+
+Import the dataset:
+
+```{r}
+peas <- read.csv(here("Data/s_r_pea_sections.csv"))
+```
+
+Change Treatment to a factor variable:
+
+```{r}
+peas$Treatment <- as.factor(peas$Treatment)
+levels(peas$Treatment)
+```
+
+Part 1: Is there a difference in mean pea lengths?
+
+Part 2: If there is a difference, for which growth media does the difference exist?
+
+To answer these questions, follow the workflow introduced in Chapter 5.
+
+### Plot the data
+
+Build a histogram:
+
+```{r}
+ggplot(peas, aes(pea_section_length_ou))+
+  geom_histogram()+
+  facet_wrap(~Treatment, ncol = 1)
+```
+
+Build a box plot:
+
+```{r}
+ggplot(peas, aes(Treatment, pea_section_length_ou))+
+  geom_boxplot()+
+  coord_flip()
+```
+
+Estimate the results:
+
+I assume that peas grown in the control medium will be significantly longer than other pea plants.
+
+### Build the model
+
+
+```{r}
+pea_mod<- lm(pea_section_length_ou ~ Treatment, data = peas)
+```
+
+### Check model assumptions
+
+```{r}
+autoplot(pea_mod, smooth.colour = NA)
+```
+
+The distribution is fine. 
+
+### Interpret results
+
+```{r}
+anova(pea_mod)
+```
+
+Since our p-value is small, there is a signficant effect of growth treatment on pea plant length.
+
+
+```{r}
+summary(pea_mod)
+```
+
+- Because 1% fructose 1% glucose is first alphabetically, the contrasts show us the difference in mean between the that and each other growth treatment.
+
+- Control plants grew signficantly longer than the 1% glucose 1% fructose treatment, as did plants in the 2% sucrose treatment. Neither 2% fructose or 2% glucose were different from 1% fructose 1% glucose.
+
+
+We are going to do "post hoc" tests of difference in means. To do so, we need the `multcomp` package, which we already run in the very beginning.
+
+Conduct a Tukey's HSD test:
+
+```{r}
+phc1<- glht(pea_mod, linfct = mcp(Treatment = "Tukey"))
+
+summary(phc1)
+```
+
+According to this result: 
+
+- There is no difference in mean pea length for peas grown in 2% fructose vs. 1% f 1% s
+
+- There is no difference in mean pea length for plants grown in 2% glucose vs. 1% f 1% s. 
+
+- There is also no difference in mean pea length for peas grown in 2% glucose vs. those grown in 2% fructose. 
+
+- All other groups were signficiantly different from one another.
+
+We can also look at a "compact letter display" (cld) of these results:
+
+```{r}
+cld(phc1)
+```
+
+Or we can use the `emmeans()` function from the `emmeans` package
+
+```{r}
+library(emmeans)
+ph2 <- emmeans(pea_mod, specs = "Treatment")
+summary(ph2)
+```
+
+Then use the `pairs()` function to run the Tukey test
+
+```{r}
+pairs(ph2)
+```
+
