@@ -1,0 +1,143 @@
+---
+title: "Homework-25"
+format: html
+editor: visual
+---
+
+Clean R's environment.
+
+```{r}
+rm(list = ls())
+```
+
+## 5.6 Analysis of variance: the one-way ANOVA
+
+Has one change in the variables: the explanatory variable is no longer continuous - it's either a factor or a categorical variable.
+
+The dataset we will use focuses on Daphnia and their parasites.
+
+### 5.6.1 Getting and Plotting the Data
+
+There are two main questions:
+
+1.  Do parasites alter growth rate?
+2.  Does each of the three parasites reduce growth, compared with a control (no parasite treatment)?
+
+Use the same workflow: Plot -\> Model -\> Check Assumptions -\> Interpret -\> Plot Again
+
+```{r}
+library(tidyverse)
+library(ggfortify)
+library(ggplot2)
+library(here)
+```
+
+```{r}
+daphnia <- read.csv(here("DATA", "Daphniagrowth.csv"))
+```
+
+```{r}
+glimpse(daphnia)
+```
+
+This df has 3 variables: 'growth.rate' and 'parasite' are needed for a plot, 'rep' indicates the replication of each treatment.
+
+Convert character variable into a factor.
+
+```{r}
+daphnia$parasite <- as.factor(daphnia$parasite)
+```
+
+Start by creating a box-and-whisker plot, which is effective for viewing variation in a response variable as a function of a grouping, categorical variable.
+
+```{r}
+ggplot(daphnia, aes(x = parasite, y = growth.rate)) +
+  geom_boxplot() +
+  theme_bw()
+```
+
+Although I was able to read the parasite names on my graph, there are instances where they don't fit quite right, so the chapter introduces us to coord_flip().
+
+```{r}
+ggplot(daphnia, aes(x = parasite, y = growth.rate)) +
+  geom_boxplot() +
+  theme_bw() +
+  coord_flip()
+#coord_flip() switches x- and y-axes (for view only)
+```
+
+There are a few things to take note of:
+
+1.  There is a substancial variation in the daphnia growth rates among groups.
+2.  Control treatment produces highest growth rate.
+3.  There is likely to be a parasite treatment effect overall. The order of growth (low -\> high): P. ramosa \< M. bicuspidata \< P. perplexa
+
+### 5.6.2 Construct the ANOVA
+
+```{r}
+model_grow <- lm(growth.rate ~ parasite, data = daphnia)
+```
+
+### 5.6.3 Check the assumptions
+
+Plot four diagnostic graphs.
+
+```{r}
+autoplot(model_grow, smooth.colour = NA)
+```
+
+The graphs suggest that everything is just fine, and the pattern is whithin the expected bounds of variation found in samples of normal distribution.
+
+### 5.6.4 Making an inference from a one-way ANOVA
+
+We will interpret the output of the two tools for making inferences from linear models - anova() and summary ().
+
+```{r}
+anova(model_grow)
+```
+
+There is an evidence that the parasite treatment, comprising four levels of manipulation, has produced an effect.
+
+-   For an ANOVA, null hypothesis means that all of the groups come from populations with the same mean.
+
+-   F-value quantifies the ratio of the between-group variance to the within-group variance. Since the former is is large relative to the latter, this creates a large F-value.
+
+-   A small p-value allows us to reject the null hypothesis.
+
+### 5.6.5 Treatment contrasts
+
+"Contrasts" - ways to produce information in a summary-like table. They are a way of expressing coefficients taken from statistical models.
+
+Make a summary table:
+
+```{r}
+summary(model_grow)
+```
+
+-   R presents things in an alphabetical order.
+-   "Control" group is not missing, but is labeled as an "Intercept".
+-   In ANOVA framework, we can assume that the word 'Intercept' represents the first level of the alphabetically ordered treatment levels.
+-   In a summary table, the numbers associated with each parasite are differences between growth rates associated with that parasite and the control. This is why they are all negative.
+
+We can also get the means for each treatment level using group_by() and summarize(), and then calculate the contrast ourselves.
+
+```{r}
+#to get the mean growth rates:
+sumDat <- daphnia %>%
+  group_by(parasite) %>%
+  summarize(meanGR = mean(growth.rate))
+```
+
+Now we can manually calculate how the control growth rate plus the treatment contrast for a given parasite in the summary table gives us the mean growth rate for that parasite.
+
+E.g: 1.21 +(-0.73) = 0.48 which is a mean growth rate for P.ramosa
+
+Finally, we can make a graph like in Figure 5.11. Specify two geom_points(): one for daphnia df aesthetics and another for sumDat df.
+
+```{r}
+ggplot(daphnia, aes(parasite, growth.rate, color = parasite))+
+     geom_point(size = 1.5)+
+     geom_point(data = sumDat, aes(parasite, meanGR, fill = parasite), size = 5)+
+     coord_flip()+
+     theme_bw()
+```
