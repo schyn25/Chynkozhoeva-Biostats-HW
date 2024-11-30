@@ -1,0 +1,139 @@
+---
+title: "Homework 24"
+format: html
+editor: visual
+---
+
+## Overview
+
+For your homework you will implement a data analysis using a dataset on crab growth measurements.
+
+Set things up (hint: there is a new package to add with `library()`)
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(ggplot2)
+library(ggfortify) #evaluated model assumptions
+library(here)
+```
+
+## The data
+
+Let's pull in some data appropriate biologists: crab measurements. This dataset includes measurements of farmed crabs.
+
+```{r}
+crabs <- read.csv(here("DATA", "CrabAgePrediction.csv"))
+glimpse(crabs)
+```
+
+One of the variables is categorical - let's fix that in the data.
+
+```{r}
+crabs$Sex <- as.factor(crabs$Sex)
+```
+
+## Question
+
+Is there a relationship between height and weight in female crabs?
+
+1.  Extract the data for just female crabs.
+
+2.  Examine the response and predictor variables and use the flow chart from class to decide the appropriate statistical analysis (choose from: chi-square, 2-sample t-test or linear regression).
+
+3.  Work through the data analysis **following all of the steps provided in chapter 5 of your book**. You may use class notes or homework keys as a guide.
+
+## Plot the data
+
+Extract the data for just female crabs:
+
+```{r}
+fcrabs <- crabs |> filter(Sex == "F")
+```
+
+Make a scatter plot:
+
+```{r}
+ggplot(fcrabs, aes(Height, Weight))+
+     geom_point()+
+     ylab("Weight of crab (g)")+
+     theme_bw()
+```
+
+Looks like there's an outlier in height above 2. Remove it:
+
+```{r}
+fcrabs <- fcrabs |> filter(Height < 2)
+ggplot(fcrabs, aes(Height, Weight))+
+     geom_point()+
+     labs(y = "Crab weight (g)", x = "Crab height (mm)")+
+     theme_bw()
+
+```
+
+## Interpret the figure
+
+There is a positive slope. We can also guesstimate the slope and intercept from the figure.
+
+- The weight of the crabs ranges approximately between 2 and 76 grams
+
+- And the crab heights varies approximately between 0.15 and 0.63 mm
+
+Slope is rise/run, which in this case is about (76 - 2) = 74 for rise and 0.63 - 0.15 = 0.48 for run, so we get 74/0.48 = 154 as the slope.
+
+Eyeballing the plot, we would also guess that the y-intercept is somewhere around -10
+
+## Make a simple linear regression 
+
+Use the `lm()` function:
+
+```{r}
+model_crabs <- lm(Weight ~ Height, data = fcrabs)
+```
+
+Ok, the model has been fit. We shuld consider assumptions before we look at the results: 
+
+We need to use the `ggfortify` package and the `autoplot()` function within it:
+
+```{r}
+autoplot(model_crabs, smooth.color = NA)
+```
+
+Top right - Normal Q-Q plot: This evaluates the assumption that the residuals are normally distributed. We want the dots to fall pretty close to the line (observed = expected).
+
+What does `smooth.color = NA` do? In the absence of this argument, the default presentation would be a wiggly line fitted by the regression. The NA suppresses that line.
+
+## Interprete the results
+
+Now that we know that our data meet the assumptions of a linear regression, we can look at and interpret the model.
+
+We use two tools that we will use for every general (and generalized) model here on out: `anova()` and `summary()`.
+
+`anova()` does not perform an ANOVA. Instead, it produces a classic anova table, the sums-of-squares table including the F-statistic, which is the ratio of variance explained by the explanatory variable to the leftover variance. As well, it produces an estimate of R\^2 and adjusted R\^2.
+
+Use anova() and take a look:
+
+```{r}
+anova(model_crabs)
+```
+
+Look at the summary table:
+
+```{r}
+summary(model_crabs)
+```
+
+## From stats back to figure
+
+Now let's make a figure that shows off our relationship in light of our statistical results.
+
+```{r}
+ggplot(fcrabs, aes(Height, Weight))+
+     geom_point()+
+     geom_smooth(method = "lm")+
+     labs(x = "Crab height (mm)", y = "Crab weight (g)")+
+     theme_bw()
+```
+
+
+
